@@ -17,6 +17,10 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import { useNavigation } from '@react-navigation/native'
 
+import Spinner from 'react-native-loading-spinner-overlay'
+
+import ValeStatus from '../Components/ValeStatus'
+
 import useFetch from '../hooks/useFetch'
 
 const images = [
@@ -66,18 +70,18 @@ const Home = () => {
     data: fetchedMonitoring,
     loading: monitoringLoading,
     error: monitoringError,
-  } = useFetch('http://192.168.0.109:3000/api/last-monitoring')
+  } = useFetch('https://vertical-garden-api.onrender.com/api/last-monitoring')
 
   const {
     data: status,
     loading: statusLoading,
     error: statusError,
-  } = useFetch('http://192.168.0.109:3000/api/vale')
+  } = useFetch('https://vertical-garden-api.onrender.com/api/vale')
 
   const fetchData = () => {
     setTimeout(() => {
       setLoading(true)
-      fetch('http://192.168.0.109:3000/api/last-monitoring')
+      fetch('https://vertical-garden-api.onrender.com/api/last-monitoring')
         .then((response) => response.json())
         .then((newMonitoringData) => {
           setMonitoringData(newMonitoringData)
@@ -86,7 +90,7 @@ const Home = () => {
           console.error('Error al recargar los datos de monitoreo:', error)
         })
 
-      fetch('http://192.168.0.109:3000/api/vale')
+      fetch('https://vertical-garden-api.onrender.com/api/vale')
         .then((response) => response.json())
         .then((newStatus) => {
           setValeStatus(newStatus)
@@ -124,16 +128,22 @@ const Home = () => {
 
   if (monitoringLoading || statusLoading || monitoringError || statusError) {
     return (
-      <Text
+      <View
         style={{
-          fontSize: 102,
-          fontWeight: '500',
-          color: 'gray',
-          padding: 16,
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'white',
         }}
       >
-        Loading...
-      </Text>
+        <Spinner
+          visible={loading}
+          textContent={'Cargando...'}
+          textStyle={{ color: 'gray' }}
+          overlayColor='white'
+          color='#689F38'
+        />
+      </View>
     )
   }
 
@@ -155,6 +165,7 @@ const Home = () => {
           onRefresh={handleRefresh}
           colors={['#9Bd35A', '#689F38']}
           tintColor={'#689F38'}
+          style={{ marginTop: 8 }}
         />
       }
     >
@@ -186,62 +197,7 @@ const Home = () => {
       </View>
 
       {/* Show vale status component */}
-      <View style={styles.valeStatus}>
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: '600',
-            color: 'rgba(69, 69, 69, 1)',
-          }}
-        >
-          🌻 Vale status
-        </Text>
-        <Text
-          style={{
-            fontSize: 15,
-            fontWeight: '600',
-            color: 'rgba(105, 105, 105, 1)',
-            marginTop: 8,
-          }}
-        >
-          Is the Vale open or closed?
-        </Text>
-        <Text
-          style={{
-            fontWeight: '400',
-            color: 'rgba(105, 105, 105, 1)',
-            marginTop: 4,
-          }}
-        >
-          You can see the state of the vale here in your application!
-        </Text>
-        <View
-          style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor:
-              valeStatus === false
-                ? 'rgba(92, 201, 140, 0.8)'
-                : 'rgba(46, 139, 87, 0.8)',
-            marginTop: 18,
-            borderRadius: 18,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: '500',
-              color: 'white',
-              padding: 16,
-            }}
-          >
-            {(loading && (valeStatus === false ? 'Closed' : 'Open')) ||
-              'Loading...'}
-          </Text>
-        </View>
-      </View>
+      <ValeStatus valeStatus={valeStatus} loading={loading} />
 
       <View>
         <Text
@@ -257,6 +213,7 @@ const Home = () => {
       </View>
 
       {/* FastView component */}
+      {/* REFACTOR IS NECESSARY FOR THIS COMPONENT!!!! */}
       <View style={styles.fastView}>
         <View style={styles.fastViewSubcontainer}>
           <View style={styles.numberContainer}>
@@ -327,15 +284,6 @@ const Home = () => {
 }
 
 const styles = StyleSheet.create({
-  // Vale status
-  valeStatus: {
-    width: '96%',
-    backgroundColor: 'rgba(92, 201, 140, 0.2)',
-    borderRadius: 22,
-    paddingVertical: 18,
-    paddingHorizontal: 18,
-    marginVertical: 8,
-  },
   // Monitoring data
   fastView: {
     display: 'flex',
